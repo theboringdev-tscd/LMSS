@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,600;1,300;1,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-paper text-ink font-body text-body;
+  }
+
+  ::selection {
+    @apply bg-leather/20 text-ink;
+  }
+}
+
+@layer components {
+  .gold-rule {
+    @apply border-0 h-px bg-gradient-to-r from-transparent via-gold-leaf to-transparent;
+  }
+}

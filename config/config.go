@@ -15,9 +15,8 @@ func setupViperDefaults() {
 	viper.SetDefault("app.name", "Golang App")
 	viper.SetDefault("app.env", "development")
 	viper.SetDefault("app.banner_path", "banner.txt")
-	viper.SetDefault("app.startup_delay", 15)   // 15 seconds default
-	viper.SetDefault("app.quiet_startup", true) // clean console by default
-	viper.SetDefault("app.enable_tui", false)   // TUI enabled by default
+	viper.SetDefault("app.startup_delay", 15) // 15 seconds default
+	viper.SetDefault("app.enable_tui", false) // TUI enabled by default
 	viper.SetDefault("server.port", "8080")
 	viper.SetDefault("server.services_endpoint", "/api/v1")
 	viper.SetDefault("auth.type", "none")
@@ -30,13 +29,14 @@ func setupViperDefaults() {
 	viper.SetDefault("mongo.enabled", false)
 	viper.SetDefault("swagger.enabled", false) // enable explicitly in config
 	viper.SetDefault("app.debug", false)       // sanitise-by-default
-	viper.SetDefault("swagger.base_path", "/swagger")
 	viper.SetDefault("metrics.enabled", false)
 	viper.SetDefault("metrics.path", "/metrics")
 	viper.SetDefault("webhook.enabled", false)
 	viper.SetDefault("webhook.timeout_seconds", 30)
 	viper.SetDefault("webhook.max_retries", 3)
 	viper.SetDefault("webhook.endpoint", "/api/v1/webhook")
+	viper.SetDefault("frontend.enabled", true)
+	viper.SetDefault("frontend.path", "/")
 }
 
 type Config struct {
@@ -49,15 +49,16 @@ type Config struct {
 	Redis               RedisConfig         `mapstructure:"redis"`
 	Kafka               KafkaConfig         `mapstructure:"kafka"`
 	Postgres            PostgresConfig      `mapstructure:"postgres"`
-	PostgresMultiConfig PostgresMultiConfig `mapstructure:"postgres"`
+	PostgresMultiConfig PostgresMultiConfig `mapstructure:"postgres_multi"`
 	Mongo               MongoConfig         `mapstructure:"mongo"`
-	MongoMultiConfig    MongoMultiConfig    `mapstructure:"mongo"`
+	MongoMultiConfig    MongoMultiConfig    `mapstructure:"mongo_multi"`
 	Webhook             WebhookConfig       `mapstructure:"webhook"`
 	Metrics             MetricsConfig       `mapstructure:"metrics"`
 	Grafana             GrafanaConfig       `mapstructure:"grafana"`
 	Cron                CronConfig          `mapstructure:"cron"`
 	MinIO               MinIOConfig         `mapstructure:"minio"`
 	Encryption          EncryptionConfig    `mapstructure:"encryption"`
+	Frontend            FrontendConfig      `mapstructure:"frontend"`
 }
 
 // MiddlewareConfig is a dynamic map of middleware names to their enabled status.
@@ -90,31 +91,19 @@ type MinIOConfig struct {
 	BucketName      string `mapstructure:"bucket_name"`
 }
 
-type ExternalConfig struct {
-	Services []ExternalService `mapstructure:"services"`
-}
-
-type ExternalService struct {
-	Name string `mapstructure:"name"`
-	URL  string `mapstructure:"url"`
-}
-
 type CronConfig struct {
 	Enabled bool              `mapstructure:"enabled"`
 	Jobs    map[string]string `mapstructure:"jobs"`
 }
 
 type EncryptionConfig struct {
-	Enabled             bool   `mapstructure:"enabled"`
-	Algorithm           string `mapstructure:"algorithm"`
-	Key                 string `mapstructure:"key"`
-	RotateKeys          bool   `mapstructure:"rotate_keys"`
-	KeyRotationInterval string `mapstructure:"key_rotation_interval"`
+	Enabled   bool   `mapstructure:"enabled"`
+	Algorithm string `mapstructure:"algorithm"`
+	Key       string `mapstructure:"key"`
 }
 
 type SwaggerConfig struct {
-	Enabled  bool   `mapstructure:"enabled"`
-	BasePath string `mapstructure:"base_path"`
+	Enabled bool `mapstructure:"enabled"`
 }
 
 type AppConfig struct {
@@ -124,7 +113,6 @@ type AppConfig struct {
 	Env          string `mapstructure:"env"`
 	BannerPath   string `mapstructure:"banner_path"`
 	StartupDelay int    `mapstructure:"startup_delay"` // seconds to show TUI boot screen (0 to skip)
-	QuietStartup bool   `mapstructure:"quiet_startup"` // suppress console logs at startup (TUI only)
 	EnableTUI    bool   `mapstructure:"enable_tui"`    // enable fancy TUI mode (false = traditional console)
 }
 
@@ -205,6 +193,15 @@ type MongoConnectionConfig struct {
 type MongoMultiConfig struct {
 	Enabled     bool                    `mapstructure:"enabled"`
 	Connections []MongoConnectionConfig `mapstructure:"connections"`
+}
+
+type FrontendConfig struct {
+	Enabled bool   `mapstructure:"enabled"`
+	Path    string `mapstructure:"path"`
+}
+
+func (f FrontendConfig) IsEnabled() bool {
+	return f.Enabled
 }
 
 type MetricsConfig struct {

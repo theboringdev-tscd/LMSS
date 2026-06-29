@@ -3,9 +3,11 @@ package server
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"maps"
 	"net/http"
 	"slices"
+	"strings"
 	"time"
 
 	_ "stackyrd/internal/services/modules"
@@ -19,6 +21,7 @@ import (
 	"stackyrd/pkg/registry"
 	"stackyrd/pkg/response"
 	"stackyrd/pkg/utils"
+	"stackyrd/web"
 
 	"github.com/gin-gonic/gin"
 )
@@ -150,7 +153,82 @@ func (s *Server) Start() error {
 	s.logger.Info("HTTP server starting immediately", "port", port, "env", s.config.App.Env)
 	s.logger.Info("Infrastructure components initializing in background...")
 
+	if s.config.Frontend.Enabled {
+		return s.startWithFrontend(port)
+	}
+
 	return s.gin.Run(":" + port)
+}
+
+func (s *Server) startWithFrontend(port string) error {
+	subFS, err := fs.Sub(web.FS, "dist")
+	if err != nil {
+		s.logger.Error("Failed to create frontend sub filesystem", err)
+		return s.gin.Run(":" + port)
+	}
+
+	s.logger.Info("Registering frontend static file serving...")
+	ginHandler := s.gin
+
+	srv := &http.Server{
+		Addr: ":" + port,
+		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			path := r.URL.Path
+
+			// API, health, and known system paths go to Gin
+			if strings.HasPrefix(path, "/api/") || strings.HasPrefix(path, "/health") ||
+				strings.HasPrefix(path, "/swagger") || strings.HasPrefix(path, "/metrics") {
+				ginHandler.ServeHTTP(w, r)
+				return
+			}
+
+			// Try to serve the exact file from embedded dist
+			if path != "/" {
+				trimmed := strings.TrimPrefix(path, "/")
+				if data, err := fs.ReadFile(subFS, trimmed); err == nil {
+					contentType := "application/octet-stream"
+					if strings.HasSuffix(trimmed, ".svg") {
+						contentType = "image/svg+xml"
+					} else if strings.HasSuffix(trimmed, ".js") {
+						contentType = "application/javascript; charset=utf-8"
+					} else if strings.HasSuffix(trimmed, ".css") {
+						contentType = "text/css; charset=utf-8"
+					} else if strings.HasSuffix(trimmed, ".html") {
+						contentType = "text/html; charset=utf-8"
+					} else if strings.HasSuffix(trimmed, ".png") {
+						contentType = "image/png"
+					} else if strings.HasSuffix(trimmed, ".jpg") || strings.HasSuffix(trimmed, ".jpeg") {
+						contentType = "image/jpeg"
+					} else if strings.HasSuffix(trimmed, ".woff2") {
+						contentType = "font/woff2"
+					} else if strings.HasSuffix(trimmed, ".woff") {
+						contentType = "font/woff"
+					} else if strings.HasSuffix(trimmed, ".txt") {
+						contentType = "text/plain; charset=utf-8"
+					}
+					if strings.HasPrefix(trimmed, "_astro/") {
+						w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+					}
+					w.Header().Set("Content-Type", contentType)
+					w.WriteHeader(http.StatusOK)
+					w.Write(data)
+					return
+				}
+			}
+
+			// SPA fallback: serve index.html
+			data, err := fs.ReadFile(subFS, "index.html")
+			if err != nil {
+				http.NotFound(w, r)
+				return
+			}
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+			w.Write(data)
+		}),
+	}
+
+	return srv.ListenAndServe()
 }
 
 func (s *Server) setConnectionDefaults() {

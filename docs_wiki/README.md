@@ -25,6 +25,12 @@
 | [**Caching**](CACHING.md) | `pkg/caching/` | Redis-backed cache with TTL, cache-aside, batch invalidation |
 | [**Security**](SECURITY.md) | *middleware* | Auth modes, security headers, CORS, encryption, best practices |
 
+## Frontend
+
+| Document | Description |
+|----------|-------------|
+| [**Frontend Phase 1**](FRONTEND.md) | Astro shell, Go embed, design tokens, sidebar, SPA fallback — with checklist |
+
 ## Operations
 
 | Document | Description |
