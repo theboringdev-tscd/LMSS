@@ -31,10 +31,6 @@ func setupViperDefaults() {
 	viper.SetDefault("app.debug", false)       // sanitise-by-default
 	viper.SetDefault("metrics.enabled", false)
 	viper.SetDefault("metrics.path", "/metrics")
-	viper.SetDefault("webhook.enabled", false)
-	viper.SetDefault("webhook.timeout_seconds", 30)
-	viper.SetDefault("webhook.max_retries", 3)
-	viper.SetDefault("webhook.endpoint", "/api/v1/webhook")
 	viper.SetDefault("frontend.enabled", true)
 	viper.SetDefault("frontend.path", "/")
 }
@@ -52,7 +48,6 @@ type Config struct {
 	PostgresMultiConfig PostgresMultiConfig `mapstructure:"postgres_multi"`
 	Mongo               MongoConfig         `mapstructure:"mongo"`
 	MongoMultiConfig    MongoMultiConfig    `mapstructure:"mongo_multi"`
-	Webhook             WebhookConfig       `mapstructure:"webhook"`
 	Metrics             MetricsConfig       `mapstructure:"metrics"`
 	Grafana             GrafanaConfig       `mapstructure:"grafana"`
 	Cron                CronConfig          `mapstructure:"cron"`
@@ -70,16 +65,6 @@ func (m MiddlewareConfig) IsEnabled(middlewareName string) bool {
 		return enabled
 	}
 	return true // Default to enabled if not specified
-}
-
-type WebhookConfig struct {
-	Enabled    bool              `mapstructure:"enabled"`
-	URL        string            `mapstructure:"url"`
-	Secret     string            `mapstructure:"secret"`
-	Timeout    int               `mapstructure:"timeout_seconds"`
-	MaxRetries int               `mapstructure:"max_retries"`
-	Headers    map[string]string `mapstructure:"headers"`
-	Endpoint   string            `mapstructure:"endpoint"`
 }
 
 type MinIOConfig struct {
@@ -117,8 +102,7 @@ type AppConfig struct {
 }
 
 type ServerConfig struct {
-	Port             string `mapstructure:"port"`
-	ServicesEndpoint string `mapstructure:"services_endpoint"`
+	Port string `mapstructure:"port"`
 }
 
 // ServicesConfig is a dynamic map of service names to their enabled status.
@@ -196,8 +180,7 @@ type MongoMultiConfig struct {
 }
 
 type FrontendConfig struct {
-	Enabled bool   `mapstructure:"enabled"`
-	Path    string `mapstructure:"path"`
+	Enabled bool `mapstructure:"enabled"`
 }
 
 func (f FrontendConfig) IsEnabled() bool {
