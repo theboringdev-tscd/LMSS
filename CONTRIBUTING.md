@@ -1,6 +1,8 @@
-# Contributing to stackyrd
+# Contributing to stackyrd (LMSS)
 
 Thank you for taking the time to contribute! This document sets out the ground rules for contributing to this project.
+
+**LMSS** (Library Management System Stackyard) is built on the **stackyrd** modular Go framework. Contributions to both the framework core and the LMSS application layer are welcome.
 
 ---
 
@@ -37,8 +39,8 @@ Thank you for taking the time to contribute! This document sets out the ground r
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/diameter-tscd/stackyard.git
-cd stackyard
+git clone https://github.com/theboringdev-tscd/LMSS.git
+cd stackyrd
 ```
 
 ### Install Dependencies
@@ -70,13 +72,29 @@ go test -v ./pkg/testing/...     # Test helpers
 go run scripts/build/build.go
 ```
 
+### Frontend Development
+
+```bash
+cd web
+npm install
+npm run dev    # Astro dev server on :4321, proxies /api to :8080
+```
+
+### Build Frontend for Production
+
+```bash
+cd web && npm run build   # produces web/dist/
+```
+
+The Go binary embeds `web/dist/` via `//go:embed` and serves it on the same port as the API.
+
 ### Docker Compose (Full Dev Environment)
 
 ```bash
 docker-compose up
 ```
 
-This starts Redis, PostgreSQL, Kafka, MongoDB, Grafana, MinIO, and the stackyrd app.
+This starts **PostgreSQL** and **MongoDB**, plus the stackyrd/LMSS application.
 
 ---
 
@@ -88,27 +106,37 @@ stackyrd/
 ├── config/                           # Config structs & Viper setup
 ├── internal/
 │   ├── middleware/                    # HTTP middleware (auto-registered via init())
+│   │   ├── jwt.go                    # JWT authentication
+│   │   ├── cors.go                   # CORS
+│   │   ├── ratelimit.go              # Rate limiting
+│   │   ├── security.go               # Security headers
+│   │   ├── audit.go                  # Audit logging
+│   │   └── swagger.go                # Swagger UI
 │   └── server/                        # Gin server, health endpoints, graceful shutdown
 ├── internal/services/modules/         # Business logic services (auto-discovered)
+│   ├── auth_service.go               # JWT login, user management
+│   ├── catalog_service.go            # Book CRUD + search
+│   ├── patrons_service.go            # Patron CRUD + search
+│   ├── circulation_service.go        # Checkout / return / loans
+│   ├── fines_service.go              # Fine management + payment
+│   ├── reservations_service.go       # Book holds / reservations
+│   └── reports_service.go            # Dashboard analytics
 ├── pkg/
-│   ├── interfaces/                    # Core interfaces (Service, etc.)
+│   ├── interfaces/                    # Core interfaces (Service, InfrastructureComponent)
 │   ├── registry/                      # Service registry & DI container
-│   ├── plugin/                        # Plugin system (TS/Lua/Python/Go runtimes)
+│   ├── plugin/                        # Plugin system (TS / Lua / Python / Go)
 │   │   └── builtin/                   # Built-in plugin manifests + scripts
 │   ├── infrastructure/                # Infrastructure components (auto-registered)
+│   │   ├── mongo.go                   # MongoDB connection manager (multi-connection)
+│   │   ├── postgres.go                # PostgreSQL raw SQL + GORM
+│   │   └── ...
 │   ├── logger/                        # Structured logger (zerolog)
 │   ├── response/                      # API response helpers
 │   ├── request/                       # Request binding & validation
 │   ├── tui/                           # Terminal UI (bubbletea + lipgloss)
 │   ├── metrics/                       # Prometheus metrics
-│   ├── pagination/                    # Cursor-based pagination
-│   ├── caching/                       # Redis-backed cache abstraction
-│   ├── batch/                         # Batch processing utilities
 │   ├── resilience/                    # Circuit breaker, retry, timeout, health checks
-│   ├── testing/                       # Test helpers and mocks
-│   ├── utils/                         # General utilities
-│   ├── webhook/                       # Webhook handler
-│   └── websocket/                     # WebSocket handler
+│   └── utils/                         # General utilities
 ├── scripts/                           # Build, Docker, packaging, code generators
 ├── tests/                             # Integration & unit tests
 ├── config.yaml                        # Main YAML configuration
@@ -378,7 +406,7 @@ Four plugin types are supported: **TypeScript**, **Lua**, **Python** (gRPC subpr
 
 ## Reporting Bugs
 
-1. Open an issue at https://github.com/diameter-tscd/stackyard/issues.
+1. Open an issue at https://github.com/theboringdev-tscd/LMSS/issues.
 2. Use the **Bug Report** template.
 3. Include:
    - A clear description of the problem.
@@ -391,7 +419,7 @@ Four plugin types are supported: **TypeScript**, **Lua**, **Python** (gRPC subpr
 
 ## Feature Requests
 
-1. Open an issue at https://github.com/diameter-tscd/stackyard/issues.
+1. Open an issue at https://github.com/theboringdev-tscd/LMSS/issues.
 2. Use the **Feature Request** template.
 3. Describe the problem the feature solves, the proposed solution, and any alternatives you have considered.
 

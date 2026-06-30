@@ -24,25 +24,29 @@ In production, load all secrets via environment variables or a secrets manager.
 | `auth.secret` | Full auth bypass |
 | `postgres.connections[].password` | Database access |
 | `mongo.connections[].uri` | DB access |
-| `redis.password` | Cache / session access |
-| `grafana.password` | Observability access |
-| `minio.secret_access_key` | Object storage access |
 | `encryption.key` | Data decryption |
 
 ### Production Checklist
 
 - `app.env: production`, `debug: false`
-- JWT/API-key auth enabled (`middleware.jwt: true`)
+- JWT auth enabled (`middleware.jwt: true`)
 - Rate limiting and audit logging **on**
 - CORS locked to known origins (no `*`)
 - `sslmode: require` or `verify-full` on Postgres
-- TLS/SCRAM on MongoDB, Redis, Kafka
-- `use_ssl: true` on MinIO
+- TLS/SCRAM on MongoDB
 - HSTS headers on (provided by `security` middleware)
+- Frontend served over HTTPS with appropriate CSP headers
+
+## Frontend Security
+
+The embedded Astro.js SPA is served by the Go binary. Ensure:
+- CSP headers are set via the `security` middleware
+- No secrets are embedded in the frontend build (`web/dist/`)
+- Sanitize any user-generated content rendered in the UI
 
 ## Reporting Vulnerabilities
 
 Do **not** open a public issue.
 
-- Open a **private advisory**: <https://github.com/diameter-tscd/stackyard/security/advisories/new>
+- Open a **private advisory**: <https://github.com/theboringdev-tscd/LMSS/security/advisories/new>
 - We aim to acknowledge within **7 business days** and patch within **90 days** for high/critical issues.
