@@ -234,6 +234,61 @@
                 "panel": "dedicated"
             },
             "problemMatcher": []
+        },
+        {
+            "label": "docker: stack up",
+            "type": "shell",
+            "command": "docker compose up -d",
+            "group": "none",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "docker: stack deps",
+            "type": "shell",
+            "command": "docker compose up -d postgres mongo",
+            "group": "none",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "docker: stack down",
+            "type": "shell",
+            "command": "docker compose down",
+            "group": "none",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "docker: stack logs",
+            "type": "shell",
+            "command": "docker compose logs -f",
+            "group": "none",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "docker: stack ps",
+            "type": "shell",
+            "command": "docker compose ps",
+            "group": "none",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
         }
     ]
 }

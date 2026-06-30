@@ -1,5 +1,6 @@
 ---
 import SidebarLayout from "../../layouts/SidebarLayout.astro";
+import BookList from "../../components/catalog/BookList";
 ---
 
 <SidebarLayout title="Catalog — LMSS">
@@ -9,6 +10,6 @@ import SidebarLayout from "../../layouts/SidebarLayout.astro";
       <p class="text-reading-lamp text-data mt-1">Browse and search the collection</p>
     </header>
     <hr class="gold-rule" aria-hidden="true" />
-    <p class="text-reading-lamp text-body">Catalog coming in Phase 3.</p>
+    <BookList client:load />
   </section>
 </SidebarLayout>

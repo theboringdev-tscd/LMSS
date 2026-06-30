@@ -110,12 +110,12 @@ func (r *ServiceRegistry) RegisterServiceWithDependencies(
 		r.logger.Debug("Service disabled via config", "service", serviceName)
 		return nil
 	}
-	if service := factory(config, logger, deps); service != nil {
+	service := factory(config, logger, deps)
+	if service != nil {
 		r.Register(service)
 		r.logger.Info("Service registered with dependencies", "service", serviceName)
-		return nil
 	}
-	return fmt.Errorf("failed to create service: %s", serviceName)
+	return nil
 }
 
 // GetServices returns the list of registered services

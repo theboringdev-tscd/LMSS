@@ -1,14 +1,16 @@
 ---
 import SidebarLayout from "../../layouts/SidebarLayout.astro";
+import CheckoutForm from "../../components/circulation/CheckoutForm";
 ---
 
 <SidebarLayout title="Checkout — LMSS">
   <section class="space-y-6">
     <header>
-      <h1 class="font-display text-page-title text-ink">Check Out</h1>
-      <p class="text-reading-lamp text-data mt-1">Scan book + patron to checkout</p>
+      <a href="/circulation" class="text-reading-lamp text-data hover:text-leather transition-colors">&larr; Back to Circulation</a>
+      <h1 class="font-display text-page-title text-ink mt-2">Checkout Book</h1>
+      <p class="text-reading-lamp text-data mt-1">Enter book and patron IDs to checkout</p>
     </header>
     <hr class="gold-rule" aria-hidden="true" />
-    <p class="text-reading-lamp text-body">Checkout flow coming in Phase 4.</p>
+    <CheckoutForm client:load onSuccess={() => { window.location.href = "/circulation"; }} />
   </section>
 </SidebarLayout>

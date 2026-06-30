@@ -5,8 +5,8 @@
 **Name:** stackyrd
 **Language:** Go 1.25.3
 **Module:** `github.com/diameter-tscd/stackyrd`
-**Purpose:** Enterprise-grade modular service framework built on Gin for rapid, configurable, observable microservice-ready Go applications.
-**Architecture:** Layered modular architecture with auto-discovered services, middleware, and infrastructure components.
+**Purpose:** Library Management System Stackyard (LMSS) — a full-featured library management application for librarians and library staff, built on the stackyrd modular Go framework.
+**Architecture:** Layered modular architecture with auto-discovered services, middleware, infrastructure components, and an embedded Astro.js SPA frontend with MongoDB storage.
 
 ---
 
@@ -40,7 +40,6 @@ stackyrd/
 │   ├── broadcast_service.go
 │   ├── cache_service.go
 │   ├── encryption_service.go
-│   ├── grafana_service.go
 │   ├── mongodb_service.go
 │   └── multi_tenant_service.go
 ├── pkg/
@@ -75,26 +74,17 @@ stackyrd/
 │   │   ├── afero.go               # Virtual filesystem abstraction (spf13/afero)
 │   │   ├── async.go               # Generic async result/batch utilities
 │   │   ├── cron_manager.go        # Cron scheduler wrapper (robfig/cron)
-│   │   ├── grafana.go             # Grafana API client
-│   │   ├── kafka.go               # Kafka producer/consumer (IBM/sarama)
-│   │   ├── minio.go               # MinIO S3-compatible storage client
 │   │   ├── mongo.go               # MongoDB driver with multi-connection support
 │   │   ├── postgres.go            # PostgreSQL raw SQL + GORM, multi-connection
-│   │   └── redis.go               # Redis sync/async/batch client
 │   ├── logger/                         # Structured logger (zerolog-based)
 │   ├── response/                       # Standard API response helpers
 │   ├── request/                        # Request binding and validation helpers
 │   ├── tui/                            # Terminal UI (bubbletea + lipgloss)
 │   ├── metrics/                        # Prometheus metrics
-│   ├── pagination/                     # Cursor-based pagination
-│   ├── caching/                        # Redis-backed cache abstraction
-│   ├── batch/                          # Batch processing utilities
 │   ├── logging/                        # Log rotation, sampling, structured helpers
 │   ├── resilience/                     # Circuit breaker, health checks, retry, timeout
-│   ├── testing/                        # Test helpers and mocks
 │   ├── utils/                          # General utilities (system, http, io, date, numeric, strings, image, params, broadcast)
-│   ├── webhook/                        # Webhook handler
-│   └── websocket/                      # WebSocket handler
+│   ├── cache/                          # In-memory cache abstraction
 ├── scripts/
 │   ├── build/build.go          # Build script (garble, backup, archiving)
 │   ├── docker/docker_build.go  # Docker build helper
@@ -168,13 +158,13 @@ Middleware is **auto-registered** via `init()` calls. Each middleware is a `Midd
 
 ### Naming
 - Service files: `{name}_service.go` (e.g. `users_service.go`).
-- Infrastructure files: `{name}.go` (e.g. `mongo.go`, `kafka.go`).
+- Infrastructure files: `{name}.go` (e.g. `mongo.go`, `postgres.go`).
 - Test files: `{package}_test.go`.
 
 ### Configuration
 - **Single source of truth:** `config.yaml` at repo root.
 - Loaded via **Viper** (`spf13/viper`) — supports YAML file + env var overrides.
-- Config struct lives in `config/config.go` with typed sections: `App`, `Server`, `Services`, `Middleware`, `Auth`, `Redis`, `Kafka`, `Postgres` (multi-connection), `Mongo` (multi-connection), `Grafana`, `Minio`, `Cron`, `Encryption`.
+- Config struct lives in `config/config.go` with typed sections: `App`, `Server`, `Services`, `Middleware`, `Auth`, `Postgres` (multi-connection), `Mongo` (multi-connection), `Cron`, `Encryption`.
 - **Never hardcode secrets in config.yaml** — use env vars in production.
 
 ### Auto-Registration Pattern
@@ -214,16 +204,14 @@ go run scripts/build/build.go
 ```bash
 docker-compose up
 ```
-Stack includes: Redis, PostgreSQL, Kafka, MongoDB, Grafana, MinIO, and the stackyrd app.
+Stack includes: MongoDB and the LMSS application.
 
 ### Testing
 ```bash
 go test ./...                # All tests
 go test -v ./tests/...       # Verbose test output
-go test -v ./pkg/testing/... # Run test helpers
 ```
 - Test framework: `testify` (assertions) + `httptest` + Gin test mode.
-- Helper library: `pkg/testing/helpers.go` — `NewTestContext`, `AssertStatus`, `AssertJSON`, `ParseResponse`.
 - CI: `go test -v ./...`
 
 ### CI Pipeline
@@ -249,11 +237,7 @@ go test -v ./pkg/testing/... # Run test helpers
 | `github.com/stretchr/testify` | Test assertions |
 | `github.com/robfig/cron/v3` | Cron scheduler |
 | `spf13/afero` | Virtual filesystem abstraction |
-| `github.com/gorilla/websocket` | WebSocket support |
 | `github.com/dop251/goja` | JavaScript runtime (plugin execution) |
-| `github.com/evanw/esbuild` | In-process TypeScript → JS transpiler |
-| `google.golang.org/grpc` | gRPC framework (external plugin communication) |
-| `google.golang.org/protobuf` | Protobuf runtime (external plugins) |
 
 ---
 
@@ -408,6 +392,17 @@ The canonical project documentation lives in **`docs_wiki/`**. Each conceptual a
 **`docs_wiki/README.md` is the table of contents** — it links to every file inside `docs_wiki/`, organized by topic. When you add, remove, or reorganize any `docs_wiki/*.md` file, update `docs_wiki/README.md` to match.
 
 **When adding or updating packages, middleware, services, or patterns,** update the corresponding `docs_wiki/*.md` file and the `docs_wiki/README.md` index to keep them in sync.
+
+## Frontend Design Plan
+
+The LMSS frontend design is documented in `.kilo/plans/lmss-frontend-design.md`. It covers:
+- **Architecture**: Astro.js SPA with React islands, Go binary embeds the static build
+- **Design Tokens**: Library-themed color palette (binding, paper, leather, gold-leaf, etc.), typography (Cormorant/Inter/JetBrains Mono), layout
+- **Pages & Routes**: 14 frontend routes + 7 API service groups
+- **Component Architecture**: Astro layouts + React islands + shadcn/ui
+- **Phased Implementation**: 6 phases from foundation through polish
+
+**Before working on any frontend task**, read `.kilo/plans/lmss-frontend-design.md` first to ensure alignment with the established design direction. All new Go backend services for LMSS use MongoDB.
 
 ## Targets you should never commit
 

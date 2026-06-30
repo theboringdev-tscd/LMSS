@@ -1,12 +1,10 @@
 package main_test
 
 import (
-	"context"
 	"io"
 	_ "stackyrd/internal/services/modules" // nolint:blank-imports triggers init() registrations
 	"sync"
 	"testing"
-	"time"
 
 	"stackyrd/config"
 	"stackyrd/pkg/logger"
@@ -47,7 +45,7 @@ func TestConfig_ServicesIsEnabled(t *testing.T) {
 	cfg, err := config.LoadConfig()
 	assert.NoError(t, err)
 	assert.True(t, cfg.Services.IsEnabled("any_service"))
-	assert.True(t, cfg.Services.IsEnabled("users_service"))
+	assert.True(t, cfg.Services.IsEnabled("auth_service"))
 }
 
 func TestConfig_ServicesDisabled(t *testing.T) {
@@ -78,8 +76,6 @@ func TestConfig_MiddlewareDisabled(t *testing.T) {
 func TestConfig_InfraDefaults(t *testing.T) {
 	cfg, err := config.LoadConfig()
 	assert.NoError(t, err)
-	assert.False(t, cfg.Redis.Enabled)
-	assert.False(t, cfg.Kafka.Enabled)
 	assert.False(t, cfg.Mongo.Enabled)
 	assert.False(t, cfg.Cron.Enabled)
 }
@@ -132,7 +128,7 @@ func TestRegistry_RegisterAndRetrieve(t *testing.T) {
 	assert.NoError(t, err)
 
 	reg := registry.NewServiceRegistry(l)
-	err = reg.RegisterServiceWithDependencies(cfg, l, registry.NewDependencies(), "users_service")
+	err = reg.RegisterServiceWithDependencies(cfg, l, registry.NewDependencies(), "auth_service")
 	assert.NoError(t, err)
 }
 
@@ -159,8 +155,8 @@ func TestRegistry_KnownFactoriesExist(t *testing.T) {
 	factories := registry.GetServiceFactories()
 	assert.NotEmpty(t, factories,
 		"service factories should be populated by module init() imports")
-	_, hasUsers := factories["users_service"]
-	assert.True(t, hasUsers, "users_service must be auto-registered via init()")
+	_, hasAuth := factories["auth_service"]
+	assert.True(t, hasAuth, "auth_service must be auto-registered via init()")
 }
 
 func TestRegistry_ServiceDiscoveredEmpty(t *testing.T) {
@@ -268,64 +264,6 @@ func (m *simpleMockLogger) GetLogs() []mockLogEntry {
 }
 func (m *simpleMockLogger) Clear() { m.mu.Lock(); m.logs = m.logs[:0]; m.mu.Unlock() }
 
-type simpleMockRedisManager struct {
-	mu      sync.RWMutex
-	storage map[string]interface{}
-}
-
-func (m *simpleMockRedisManager) Set(_ context.Context, key string, value interface{}, _ time.Duration) error {
-	m.mu.Lock()
-	if m.storage == nil {
-		m.storage = make(map[string]interface{})
-	}
-	m.storage[key] = value
-	m.mu.Unlock()
-	return nil
-}
-func (m *simpleMockRedisManager) Get(_ context.Context, key string) (string, error) {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-	if v, ok := m.storage[key]; ok {
-		if s, ok := v.(string); ok {
-			return s, nil
-		}
-	}
-	return "", nil
-}
-func (m *simpleMockRedisManager) Delete(_ context.Context, key string) error {
-	m.mu.Lock()
-	if m.storage != nil {
-		delete(m.storage, key)
-	}
-	m.mu.Unlock()
-	return nil
-}
-func (*simpleMockRedisManager) Close() error { return nil }
-
-type simpleMockKafkaManager struct {
-	mu       sync.RWMutex
-	messages []mockKafkaMessage
-}
-type mockKafkaMessage struct {
-	Topic string
-	Value []byte
-}
-
-func (m *simpleMockKafkaManager) Publish(topic string, value []byte) error {
-	m.mu.Lock()
-	m.messages = append(m.messages, mockKafkaMessage{topic, value})
-	m.mu.Unlock()
-	return nil
-}
-func (m *simpleMockKafkaManager) GetMessages() []mockKafkaMessage {
-	m.mu.RLock()
-	out := make([]mockKafkaMessage, len(m.messages))
-	copy(out, m.messages)
-	m.mu.RUnlock()
-	return out
-}
-func (*simpleMockKafkaManager) Close() error { return nil }
-
 type simpleMockCronManager struct {
 	mu   sync.RWMutex
 	jobs map[string]func()
@@ -422,26 +360,6 @@ func TestMockLogger_Clear(t *testing.T) {
 	ml.Info("msg")
 	ml.Clear()
 	assert.Empty(t, ml.GetLogs())
-}
-
-func TestMockRedisManager_SetGetDelete(t *testing.T) {
-	rm := &simpleMockRedisManager{}
-	assert.NoError(t, rm.Set(t.Context(), "k1", "v1", 0))
-	v, err := rm.Get(t.Context(), "k1")
-	assert.NoError(t, err)
-	assert.Equal(t, "v1", v)
-	assert.NoError(t, rm.Delete(t.Context(), "k1"))
-	v, _ = rm.Get(t.Context(), "k1")
-	assert.Empty(t, v)
-}
-
-func TestMockKafkaManager_PublishGetMessages(t *testing.T) {
-	km := &simpleMockKafkaManager{}
-	assert.NoError(t, km.Publish("topic1", []byte("hello")))
-	msgs := km.GetMessages()
-	assert.Len(t, msgs, 1)
-	assert.Equal(t, "topic1", msgs[0].Topic)
-	assert.Equal(t, []byte("hello"), msgs[0].Value)
 }
 
 func TestMockCronManager_AddRemoveJob(t *testing.T) {

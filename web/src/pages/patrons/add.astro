@@ -1,5 +1,6 @@
 ---
 import SidebarLayout from "../../layouts/SidebarLayout.astro";
+import PatronForm from "../../components/patrons/PatronForm";
 ---
 
 <SidebarLayout title="Add Patron — LMSS">
@@ -9,6 +10,11 @@ import SidebarLayout from "../../layouts/SidebarLayout.astro";
       <h1 class="font-display text-page-title text-ink mt-2">Add Patron</h1>
     </header>
     <hr class="gold-rule" aria-hidden="true" />
-    <p class="text-reading-lamp text-body">Patron form coming in Phase 4.</p>
+    <PatronForm
+      client:load
+      onSuccess={() => {
+        window.location.href = "/patrons";
+      }}
+    />
   </section>
 </SidebarLayout>

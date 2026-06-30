@@ -1,5 +1,6 @@
 ---
 import SidebarLayout from "../../layouts/SidebarLayout.astro";
+import PatronDetail from "../../components/patrons/PatronDetail";
 export async function getStaticPaths() {
   return [{ params: { id: "placeholder" } }];
 }
@@ -13,6 +14,6 @@ const { id } = Astro.params;
       <h1 class="font-display text-page-title text-ink mt-2">Patron Profile</h1>
     </header>
     <hr class="gold-rule" aria-hidden="true" />
-    <p class="text-reading-lamp text-body">Patron detail view coming in Phase 4.</p>
+    <PatronDetail client:load bookId={id} />
   </section>
 </SidebarLayout>

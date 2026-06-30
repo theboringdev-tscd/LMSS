@@ -104,9 +104,6 @@ func (cm *ConfigManager) LoadBanner(cfg *config.Config) (string, error) {
 // GetServiceConfigs returns a unified list of all service configurations
 func (cm *ConfigManager) GetServiceConfigs(cfg *config.Config) []ServiceConfig {
 	return []ServiceConfig{
-		{Name: ServiceGrafanaName, Enabled: cfg.Grafana.Enabled},
-		{Name: ServiceRedisCacheName, Enabled: cfg.Redis.Enabled},
-		{Name: ServiceKafkaName, Enabled: cfg.Kafka.Enabled},
 		{Name: ServicePostgreSQLName, Enabled: cfg.Postgres.Enabled},
 		{Name: ServiceMongoDBName, Enabled: cfg.Mongo.Enabled},
 		{Name: ServiceCronName, Enabled: cfg.Cron.Enabled},

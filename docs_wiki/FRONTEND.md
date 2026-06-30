@@ -48,3 +48,74 @@
 
 - [ ] Remove `http.FileServer` from `startWithFrontend()`, use only `fs.ReadFile` for both file serving and SPA fallback
 - [ ] Run final `go build ./cmd/app` after frontend server fix
+
+---
+
+# Frontend — Phase 2: Auth & Dashboard (June 2026)
+
+## Done
+
+### Backend
+- [x] Remove demo services (`users_service`, `products_service`, `tasks_service`, `broadcast_service`, `cache_service`, `encryption_service`)
+- [x] Create `internal/services/modules/auth_service.go`
+  - JWT login with MongoDB-backed users (bcrypt password hashing)
+  - Seeds default admin user on first start: `admin@library.org` / `admin`
+  - Endpoints: `POST /api/v1/auth/login`, `POST /api/v1/auth/refresh`, `POST /api/v1/auth/logout`
+  - Uses existing JWT middleware token helpers
+- [x] Create `internal/services/modules/reports_service.go`
+  - `GET /api/v1/reports/overview` — dashboard data
+  - Returns `OverviewStats` (books_checked_out_today, new_patrons_this_week, overdue_returns, recent_activity)
+  - Protected by `middleware.JWTRequired`
+- [x] Enable `jwt` middleware in `config.yaml` (switched to `JWTOptional` globally, `JWTRequired` per protected route group)
+- [x] Update `config.yaml` auth block (`type: jwt`)
+- [x] Fix `RegisterServiceWithDependencies` to return nil (not error) when service factory graceful-skips due to missing dependencies
+
+### Frontend
+- [x] Enhance `web/src/lib/api.ts`
+  - `setToken`, `clearToken`, `isAuthenticated` helpers using `localStorage`
+  - Auth header injection on every request (Bearer token)
+  - 401 interceptor → clears token + redirects to `/login`
+  - Domain API functions: `login()`, `logout()`, `getDashboardOverview()`
+- [x] Create `web/src/components/dashboard/StatBlock.tsx`
+  - Typographic stat card matching the design system
+- [x] Create `web/src/components/dashboard/ActivityFeed.tsx`
+  - Recent transactions list with graceful empty state
+- [x] Create `web/src/components/dashboard/Dashboard.tsx`
+  - React island that fetches live data via `getDashboardOverview`
+  - Sign-out button bound to `logout()`
+- [x] Update `web/src/pages/index.astro` → purely shells `<Dashboard client:load />`
+- [x] Update `web/src/pages/login.astro`
+  - Client-side redirect if already authenticated
+  - Form submit handler calling `login()` function
+  - Error display below submit button
+  - Loading state on button
+
+## API Routes (Backend)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/v1/auth/login` | Public | Email + password → JWT token |
+| POST | `/api/v1/auth/refresh` | JWT | Refresh existing token |
+| POST | `/api/v1/auth/logout` | JWT | No-op (stateless) |
+| GET | `/api/v1/reports/overview` | JWT | Dashboard stats overview |
+
+## Frontend Auth Flow
+
+1. User visits `/login` → server renders static HTML shell
+2. Client-side script runs → checks `localStorage` → redirects to `/` if token exists
+3. Submits credentials → `api.login(email, password)` stores token + redirects to `/`
+4. All subsequent requests include `Authorization: Bearer <token>` header automatically
+5. 401 response → token cleared + browser redirected to `/login`
+6. `/logout` → clears token + redirects to login
+
+## Test Fixes
+- Updated `tests/simple_test.go` to replace `users_service` references with `auth_service`
+- Updated `tests/startup_test.go` to register health endpoints in `mustBuildDiagnosticRouter` (previously broken due to Echo→Gin migration)
+- Fixed `pkg/registry/registry.go` — `RegisterServiceWithDependencies` now returns nil (not error) when a service factory gracefully returns nil due to missing dependencies (e.g., MongoDB not connected in test environment)
+
+## Next Steps
+
+- Phase 3: Catalog (CRUD + full-text search via MongoDB)
+- Phase 4: Patrons & Circulation
+- Phase 5: Fines, Reservations, Reports extensions
+- Phase 6: Polish (loading states, responsive, keyboard accessibility)

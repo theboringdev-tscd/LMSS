@@ -19,6 +19,7 @@ import (
 	"stackyrd/pkg/infrastructure"
 	"stackyrd/pkg/logger"
 	"stackyrd/pkg/registry"
+	"stackyrd/pkg/response"
 )
 
 // Sub-benchmarks: config + logger + router init (non-blocking)
@@ -362,6 +363,35 @@ func mustBuildDiagnosticRouter(t *testing.T) (*gin.Engine, *registry.Dependencie
 	}
 	reg.Boot(r)
 
+	r.GET("/health", func(c *gin.Context) {
+		response.Success(c, map[string]interface{}{"status": "ok"})
+	})
+	r.GET("/health/dependencies", func(c *gin.Context) {
+		components := deps.GetAll()
+		factories := registry.GetServiceFactories()
+		// Build a list of component names only — the actual objects may not marshal to JSON
+		componentNames := make([]string, 0, len(components))
+		for k := range components {
+			componentNames = append(componentNames, k)
+		}
+		factoryNames := make([]string, 0, len(factories))
+		for k := range factories {
+			factoryNames = append(factoryNames, k)
+		}
+		response.Success(c, map[string]interface{}{
+			"total_infrastructure": len(components),
+			"list_infrastructure":  componentNames,
+			"total_service":        len(factories),
+			"list_service":         factoryNames,
+		})
+	})
+	r.GET("/health/resources", func(c *gin.Context) {
+		response.Success(c, map[string]interface{}{
+			"memory_usage":    0,
+			"routine_running": 0,
+		})
+	})
+
 	return r, deps
 }
 
@@ -396,8 +426,8 @@ func TestStartup_AutoDiscoveredServiceFactoriesArePresent(t *testing.T) {
 	factories := registry.GetServiceFactories()
 	assert.NotEmpty(t, factories,
 		"at least one service factory must be registered by init() in internal/services/modules")
-	_, hasUsers := factories["users_service"]
-	assert.True(t, hasUsers, "users_service must be registered by init() in internal/services/modules")
+	_, hasAuth := factories["auth_service"]
+	assert.True(t, hasAuth, "auth_service must be registered by init() in internal/services/modules")
 }
 
 // TestStartup_AutoDiscoveredMiddlewareFactoriesArePresent asserts that

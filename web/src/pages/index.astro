@@ -1,34 +1,8 @@
 ---
 import SidebarLayout from "../layouts/SidebarLayout.astro";
+import Dashboard from "../components/dashboard/Dashboard";
 ---
 
 <SidebarLayout title="Dashboard — LMSS">
-  <section class="space-y-8">
-    <header>
-      <h1 class="font-display text-page-title text-ink">Dashboard</h1>
-      <p class="text-reading-lamp text-data mt-1">Library overview for today</p>
-    </header>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-      <div class="bg-book-cloth/30 rounded-card p-8 border border-book-cloth/50 shadow-index-card">
-        <p class="font-display text-display text-ink">—</p>
-        <p class="text-reading-lamp text-data uppercase tracking-wider mt-2">books checked out today</p>
-      </div>
-      <div class="bg-book-cloth/30 rounded-card p-8 border border-book-cloth/50 shadow-index-card">
-        <p class="font-display text-display text-ink">—</p>
-        <p class="text-reading-lamp text-data uppercase tracking-wider mt-2">new patrons this week</p>
-      </div>
-      <div class="bg-book-cloth/30 rounded-card p-8 border border-book-cloth/50 shadow-index-card">
-        <p class="font-display text-display text-ink">—</p>
-        <p class="text-reading-lamp text-data uppercase tracking-wider mt-2">overdue returns</p>
-      </div>
-    </div>
-
-    <hr class="gold-rule" aria-hidden="true" />
-
-    <section>
-      <h2 class="font-body text-section text-ink mb-4">Recent Activity</h2>
-      <p class="text-reading-lamp text-body">Connect to the API to see live activity.</p>
-    </section>
-  </section>
+  <Dashboard client:load />
 </SidebarLayout>

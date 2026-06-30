@@ -1,14 +1,15 @@
 ---
 import SidebarLayout from "../../layouts/SidebarLayout.astro";
+import FineManagement from "../../components/fines/FineManagement";
 ---
 
 <SidebarLayout title="Fines — LMSS">
   <section class="space-y-6">
     <header>
       <h1 class="font-display text-page-title text-ink">Fines</h1>
-      <p class="text-reading-lamp text-data mt-1">Fine management</p>
+      <p class="text-reading-lamp text-data mt-1">Fine management and payment tracking</p>
     </header>
     <hr class="gold-rule" aria-hidden="true" />
-    <p class="text-reading-lamp text-body">Fines management coming in Phase 5.</p>
+    <FineManagement client:load />
   </section>
 </SidebarLayout>

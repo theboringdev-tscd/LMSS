@@ -30,6 +30,7 @@
 | Document | Description |
 |----------|-------------|
 | [**Frontend Phase 1**](FRONTEND.md) | Astro shell, Go embed, design tokens, sidebar, SPA fallback — with checklist |
+| [**Frontend Design Plan**](../../.kilo/plans/lmss-frontend-design.md) | Full design document: architecture, color palette, typography, component tree, routes, 6-phase plan |
 
 ## Operations
 

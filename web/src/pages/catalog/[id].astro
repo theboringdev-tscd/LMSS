@@ -1,5 +1,6 @@
 ---
 import SidebarLayout from "../../layouts/SidebarLayout.astro";
+import BookDetail from "../../components/catalog/BookDetail";
 export async function getStaticPaths() {
   return [{ params: { id: "placeholder" } }];
 }
@@ -7,12 +8,5 @@ const { id } = Astro.params;
 ---
 
 <SidebarLayout title={`Book ${id} — LMSS`}>
-  <section class="space-y-6">
-    <header>
-      <a href="/catalog" class="text-reading-lamp text-data hover:text-leather transition-colors">&larr; Back to Catalog</a>
-      <h1 class="font-display text-page-title text-ink mt-2">Book Record</h1>
-    </header>
-    <hr class="gold-rule" aria-hidden="true" />
-    <p class="text-reading-lamp text-body">Book detail view coming in Phase 3.</p>
-  </section>
+  <BookDetail client:load bookId={id} />
 </SidebarLayout>

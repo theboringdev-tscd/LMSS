@@ -23,8 +23,6 @@ func setupViperDefaults() {
 	// Services config uses a dynamic map - no hardcoded defaults needed
 	// Services default to enabled if not specified (see ServicesConfig.IsEnabled)
 
-	viper.SetDefault("redis.enabled", false)
-	viper.SetDefault("kafka.enabled", false)
 	viper.SetDefault("postgres.enabled", false)
 	viper.SetDefault("mongo.enabled", false)
 	viper.SetDefault("swagger.enabled", false) // enable explicitly in config
@@ -42,16 +40,12 @@ type Config struct {
 	Middleware          MiddlewareConfig    `mapstructure:"middleware"`
 	Auth                AuthConfig          `mapstructure:"auth"`
 	Swagger             SwaggerConfig       `mapstructure:"swagger"`
-	Redis               RedisConfig         `mapstructure:"redis"`
-	Kafka               KafkaConfig         `mapstructure:"kafka"`
 	Postgres            PostgresConfig      `mapstructure:"postgres"`
 	PostgresMultiConfig PostgresMultiConfig `mapstructure:"postgres_multi"`
 	Mongo               MongoConfig         `mapstructure:"mongo"`
 	MongoMultiConfig    MongoMultiConfig    `mapstructure:"mongo_multi"`
 	Metrics             MetricsConfig       `mapstructure:"metrics"`
-	Grafana             GrafanaConfig       `mapstructure:"grafana"`
 	Cron                CronConfig          `mapstructure:"cron"`
-	MinIO               MinIOConfig         `mapstructure:"minio"`
 	Encryption          EncryptionConfig    `mapstructure:"encryption"`
 	Frontend            FrontendConfig      `mapstructure:"frontend"`
 }
@@ -65,15 +59,6 @@ func (m MiddlewareConfig) IsEnabled(middlewareName string) bool {
 		return enabled
 	}
 	return true // Default to enabled if not specified
-}
-
-type MinIOConfig struct {
-	Enabled         bool   `mapstructure:"enabled"`
-	Endpoint        string `mapstructure:"endpoint"`
-	AccessKeyID     string `mapstructure:"access_key_id"`
-	SecretAccessKey string `mapstructure:"secret_access_key"`
-	UseSSL          bool   `mapstructure:"use_ssl"`
-	BucketName      string `mapstructure:"bucket_name"`
 }
 
 type CronConfig struct {
@@ -119,20 +104,6 @@ func (s ServicesConfig) IsEnabled(serviceName string) bool {
 type AuthConfig struct {
 	Type   string `mapstructure:"type"` // e.g., "jwt", "apikey", "none"
 	Secret string `mapstructure:"secret"`
-}
-
-type RedisConfig struct {
-	Enabled  bool   `mapstructure:"enabled"`
-	Address  string `mapstructure:"address"`
-	Password string `mapstructure:"password"`
-	DB       int    `mapstructure:"db"`
-}
-
-type KafkaConfig struct {
-	Enabled bool     `mapstructure:"enabled"`
-	Brokers []string `mapstructure:"brokers"`
-	Topic   string   `mapstructure:"topic"`
-	GroupID string   `mapstructure:"group_id"`
 }
 
 type PostgresConfig struct {
@@ -190,14 +161,6 @@ func (f FrontendConfig) IsEnabled() bool {
 type MetricsConfig struct {
 	Enabled bool   `mapstructure:"enabled"`
 	Path    string `mapstructure:"path"`
-}
-
-type GrafanaConfig struct {
-	Enabled  bool   `mapstructure:"enabled"`
-	URL      string `mapstructure:"url"`
-	APIKey   string `mapstructure:"api_key"`
-	Username string `mapstructure:"username"`
-	Password string `mapstructure:"password"`
 }
 
 // LoadConfig loads configuration from local file or URL

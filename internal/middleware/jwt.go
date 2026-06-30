@@ -14,14 +14,12 @@ import (
 )
 
 func init() {
-	// Register JWT middleware
 	RegisterMiddleware("jwt", func(cfg *config.Config, logger *logger.Logger) (gin.HandlerFunc, error) {
-		// Use config for JWT secret, fallback to default
-		secretKey := "your-secret-key" // default
+		secretKey := "your-secret-key"
 		if cfg.Auth.Type == "jwt" && cfg.Auth.Secret != "" {
 			secretKey = cfg.Auth.Secret
 		}
-		return JWTRequired(secretKey), nil
+		return JWTOptional(secretKey), nil
 	})
 }
 
@@ -215,6 +213,16 @@ func GetUsername(c *gin.Context) string {
 	if username, exists := c.Get("username"); exists {
 		if usernameStr, ok := username.(string); ok {
 			return usernameStr
+		}
+	}
+	return ""
+}
+
+// GetUserEmail retrieves user email from context
+func GetUserEmail(c *gin.Context) string {
+	if email, exists := c.Get("email"); exists {
+		if emailStr, ok := email.(string); ok {
+			return emailStr
 		}
 	}
 	return ""

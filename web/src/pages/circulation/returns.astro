@@ -1,14 +1,16 @@
 ---
 import SidebarLayout from "../../layouts/SidebarLayout.astro";
+import ReturnForm from "../../components/circulation/ReturnForm";
 ---
 
 <SidebarLayout title="Returns — LMSS">
   <section class="space-y-6">
     <header>
-      <h1 class="font-display text-page-title text-ink">Returns</h1>
-      <p class="text-reading-lamp text-data mt-1">Process returns</p>
+      <a href="/circulation" class="text-reading-lamp text-data hover:text-leather transition-colors">&larr; Back to Circulation</a>
+      <h1 class="font-display text-page-title text-ink mt-2">Process Returns</h1>
+      <p class="text-reading-lamp text-data mt-1">Select an active loan to return</p>
     </header>
     <hr class="gold-rule" aria-hidden="true" />
-    <p class="text-reading-lamp text-body">Returns processing coming in Phase 4.</p>
+    <ReturnForm client:load />
   </section>
 </SidebarLayout>

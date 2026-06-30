@@ -1,5 +1,6 @@
 ---
 import SidebarLayout from "../../layouts/SidebarLayout.astro";
+import LoanList from "../../components/circulation/LoanList";
 ---
 
 <SidebarLayout title="Circulation — LMSS">
@@ -9,6 +10,11 @@ import SidebarLayout from "../../layouts/SidebarLayout.astro";
       <p class="text-reading-lamp text-data mt-1">Check out / check in</p>
     </header>
     <hr class="gold-rule" aria-hidden="true" />
-    <p class="text-reading-lamp text-body">Circulation coming in Phase 4.</p>
+    <div class="flex gap-3">
+      <a href="/circulation/checkout" class="px-4 py-2 rounded bg-leather text-paper font-body text-body hover:bg-leather/90 transition-colors no-underline">Checkout Book</a>
+      <a href="/circulation/returns" class="px-4 py-2 rounded bg-book-cloth text-ink font-body text-body hover:bg-book-cloth/80 transition-colors no-underline">Process Returns</a>
+    </div>
+    <h2 class="font-body font-semibold text-ink text-section">Active Loans</h2>
+    <LoanList client:load />
   </section>
 </SidebarLayout>
